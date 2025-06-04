@@ -1209,7 +1209,7 @@ while running:
 
     # --- Collision Detection ---
     if not (game_state["paused"] or game_state["game_over"] or game_state["victory"]):
-        player.invulnerable = True
+        # player.invulnerable = True
         # 1) Player bullets → regular enemies
         for e in enemy_sprites:
             hits = pygame.sprite.spritecollide(e, player_bullets, True)
