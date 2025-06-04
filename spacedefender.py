@@ -677,6 +677,7 @@ class SideLaserShip(pygame.sprite.Sprite):
                     # While active, damage the player if in that horizontal band
                     y0 = self.laser_row * HORIZONTAL_LANE_HEIGHT
                     if y0 <= player.rect.centery <= y0 + HORIZONTAL_LANE_HEIGHT:
+                        player.lives = 1 # Lasers also insta kills player (vaporizes them)
                         player.hit()
 
         elif self.phase == "exiting":
@@ -917,6 +918,7 @@ class Boss(pygame.sprite.Sprite):
                 x0 = lane * LANE_WIDTH
                 pygame.draw.rect(surface, COLOR_LASER_ACTIVE, (x0, 0, LANE_WIDTH, SCREEN_HEIGHT))
                 if x0 <= player.rect.centerx <= x0 + LANE_WIDTH:
+                    player.lives = 1 # Player dies instantly to laser
                     player.hit()
 
 
@@ -955,8 +957,38 @@ game_state = {
     "game_over": False,
     "victory": False,
     "paused": False,
-    "last_laser_spawn": pygame.time.get_ticks()
+    "last_laser_spawn": pygame.time.get_ticks(),
 }
+
+game_started = False
+font_title = pygame.font.SysFont("Consolas", 24)
+
+def draw_text(surface, text, color, rect, font, line_spacing=1.2):
+    """
+    Draw each paragraph (split on '\n') as its own line, centered inside rect.
+    """
+    x, y, max_w, max_h = rect
+    paragraphs = text.split("\n")
+    line_height = font.get_linesize()
+    draw_y = y
+
+    for i in range(len(paragraphs)):
+        para = paragraphs[i]
+        if para == "":
+            # Blank line
+            draw_y += int(line_height * line_spacing)
+        else:
+            # Render the entire paragraph onto one surface
+            rendered = font.render(para, True, color)
+            rw = rendered.get_width()
+
+            # Center this rendered line within rect horizontally
+            screen_x = x + (max_w - rw) // 2
+            surface.blit(rendered, (screen_x, draw_y))
+
+            # Move down for the next line
+            draw_y += int(line_height * line_spacing)
+
 
 # ----------------------------------------------------------------------
 # START NEXT WAVE (1–10)
@@ -1127,11 +1159,43 @@ while running:
             running = False
 
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-            elif event.key == pygame.K_p:
-                game_state["paused"] = not game_state["paused"]
+            # If game hasn't started, pressing 'S' begins the game
+            if not game_started and event.key == pygame.K_s:
+                game_started = True
 
+            # Only once the game has started do we allow ESC or P
+            elif game_started:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key == pygame.K_p:
+                    game_state["paused"] = not game_state["paused"]
+
+    # If the game hasn’t started, display welcome message:
+    if not game_started:
+        screen.fill(COLOR_BG)
+        title_rect = pygame.Rect(
+            50,
+            SCREEN_HEIGHT // 4,
+            SCREEN_WIDTH - 100,
+            SCREEN_HEIGHT // 3
+        )
+
+        title_text = (
+            "Welcome to Alien Invasion Defender!\n"
+            "You are humanity's last hope to defeat the aliens\n"
+            "trying to invade our planet.\n"
+            "Survive 10 waves of enemies to take down\n"
+            "their leader and save Earth!\n"
+            "\n"
+            "Do you have what it takes?\n"
+            "\n"
+            "Press S to Start"
+        )
+
+        draw_text(screen, title_text, (255, 255, 255), title_rect, font_title)
+        pygame.display.flip()
+        continue
+    
     # --- Occasionally spawn a LaserShip during Waves 1–9 ---
     if (not game_state["paused"]
         and 1 <= game_state["wave"] <= 9
@@ -1246,6 +1310,9 @@ while running:
         # 5) Enemy bullets → Player
         hits = pygame.sprite.spritecollide(player, enemy_bullets, True)
         if hits:
+            for bullet in hits:
+                if bullet.damage > 1:
+                    player.lives -= bullet.damage - 1
             player.hit()
 
         # 6) Enemy ships → Player (collision damage)
