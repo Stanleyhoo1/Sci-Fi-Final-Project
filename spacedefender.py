@@ -947,6 +947,11 @@ explosion_sprites = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 
+# Player heart icon
+HEART_SIZE = (30, 30)
+heart_full_img  = load_image("heart_full.png", scale=HEART_SIZE)
+heart_empty_img = load_image("heart_empty.png", scale=HEART_SIZE)
+
 # ----------------------------------------------------------------------
 # GAME STATE
 # ----------------------------------------------------------------------
@@ -1144,6 +1149,39 @@ def start_wave(n):
         all_sprites.add(boss)
         boss_group.add(boss)
 
+# ----------------------------------------------------------------------
+# RESET GAME FUNCTION
+# ----------------------------------------------------------------------
+def reset_game():
+    global player, game_started
+    # Clear all sprite groups
+    all_sprites.empty()
+    player_bullets.empty()
+    enemy_bullets.empty()
+    enemy_sprites.empty()
+    kamikaze_sprites.empty()
+    tank_sprites.empty()
+    sniper_sprites.empty()
+    laser_sprites.empty()
+    boss_group.empty()
+    explosion_sprites.empty()
+
+    # Recreate the player
+    player = Player()
+    all_sprites.add(player)
+
+    # Reset state
+    game_state.update({
+        "wave": 0,
+        "wave_start_time": pygame.time.get_ticks(),
+        "boss_dead": False,
+        "game_over": False,
+        "victory": False,
+        "paused": False,
+        "last_laser_spawn": pygame.time.get_ticks(),
+    })
+    game_started = False
+
 
 # ----------------------------------------------------------------------
 # MAIN GAME LOOP
@@ -1163,12 +1201,14 @@ while running:
             if not game_started and event.key == pygame.K_s:
                 game_started = True
 
-            # Only once the game has started do we allow ESC or P
+            # Only once the game has started we exit using ESC, pause with 'P', or reset with 'R' (once game is over)
             elif game_started:
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_p:
                     game_state["paused"] = not game_state["paused"]
+                elif event.key == pygame.K_r and (game_state["game_over"] or game_state["victory"]):
+                    reset_game()
 
     # If the game hasn’t started, display welcome message:
     if not game_started:
@@ -1377,11 +1417,11 @@ while running:
     heart = pygame.Surface((20, 20))
     heart.fill(COLOR_PLAYER)
     font = pygame.font.SysFont("Consolas", 24)
+    # instead of creating a Surface and fill, just blit heart images:
     for i in range(player.lives):
-        screen.blit(heart, (10 + i * 30, 10))
+        screen.blit(heart_full_img, (10 + i * (HEART_SIZE[0] + 5), 10))
     for i in range(player.lives, PLAYER_LIVES):
-        outline_rect = pygame.Rect(10 + i * 30, 10, 20, 20)
-        pygame.draw.rect(screen, COLOR_HEALTH_BG, outline_rect, 2)
+        screen.blit(heart_empty_img, (10 + i * (HEART_SIZE[0] + 5), 10))
 
     # Draw wave indicator
     wave_text = f"Wave {game_state['wave'] if game_state['wave'] <= 10 else 10}"
@@ -1394,11 +1434,11 @@ while running:
         screen.blit(pause_surf, (SCREEN_WIDTH // 2 - pause_surf.get_width() // 2,
                                  SCREEN_HEIGHT // 2 - pause_surf.get_height() // 2))
     if game_state["game_over"]:
-        over_surf = font.render("GAME OVER - Press Esc to Quit", True, (255, 50, 50))
+        over_surf = font.render("GAME OVER - Press Esc to Quit or R to Restart", True, (255, 50, 50))
         screen.blit(over_surf, (SCREEN_WIDTH // 2 - over_surf.get_width() // 2,
                                 SCREEN_HEIGHT // 2 - over_surf.get_height() // 2))
     if game_state["victory"]:
-        win_surf = font.render("YOU WIN! - Press Esc to Quit", True, (50, 255, 50))
+        win_surf = font.render("YOU WIN! - Press Esc to Quit or R to Restart", True, (50, 255, 50))
         screen.blit(win_surf, (SCREEN_WIDTH // 2 - win_surf.get_width() // 2,
                                SCREEN_HEIGHT // 2 - win_surf.get_height() // 2))
 
