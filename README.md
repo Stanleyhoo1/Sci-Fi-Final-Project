@@ -81,12 +81,12 @@ This project runs locally on your computer—no additional hosting or packaging 
 
    # On Windows (PowerShell):
    python -m venv venv
-   venv\Scripts\Activate.ps1
+   venv\Scripts\activate
    ```
 
 3. **Install dependencies**  
    ```bash
-   pip install pygame
+   pip install -r requirements.txt
    ```
 
 ---
