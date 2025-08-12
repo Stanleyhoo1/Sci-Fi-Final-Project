@@ -130,7 +130,7 @@ There is no manual “shoot” key—your ship auto‐fires every 150 ms.
      <img src="https://github.com/Stanleyhoo1/Sci-Fi-Final-Project/blob/main/assets/enemy_homing.png" width="100" height="100">
    - **Kamikaze**: Spawns at a random edge (top, left, or right) and rushes your current position at high speed. If it touches you, you die instantly (explosion).
   
-     <img src="https://github.com/Stanleyhoo1/Sci-Fi-Final-Project/blob/main/assets/kamakaze.png" width="100" height="100">
+    <img src="https://github.com/Stanleyhoo1/Sci-Fi-Final-Project/blob/main/assets/kamikaze.png" width="100" height="100">
    - **Tank**: Tanks move slowly on top half, have high HP, and fire slow, large projectiles at you. Each Tank shields one Sniper perched slightly above. Once a Tank is destroyed, its paired Sniper (unprotected) can be shotSnipers fire high‐speed, targeted bullets every 3 seconds.
   
      <img src="https://github.com/Stanleyhoo1/Sci-Fi-Final-Project/blob/main/assets/enemy_tank.png" width="100" height="100">

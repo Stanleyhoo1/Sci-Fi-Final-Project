@@ -454,7 +454,8 @@ class HeavyEnemy(Enemy):
 class Kamikaze(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = load_image("kamakaze.png", scale=(40, 40))
+        # Corrected asset filename to match "kamikaze" naming
+        self.image = load_image("kamikaze.png", scale=(40, 40))
         self.rect = self.image.get_rect(center=(0,0))  # temp; we’ll overwrite center soon
 
         # Spawn logic:
